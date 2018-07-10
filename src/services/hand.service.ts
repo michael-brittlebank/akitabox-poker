@@ -93,8 +93,66 @@ export class HandService {
     }
 
     public static calculateHandRank(cards: ICardInterface[]): string {
-        const sortedCards: ICardInterface[] = reverse(sortBy(cards, 'rank'));
-        console.warn('sorted', sortedCards);
-        return ['High Card (', UtilsService.capitalize(ERankConstant[sortedCards[0].rank]), ')'].join('');
+        if (cards.length === 5) {
+            const sortedCards: ICardInterface[] = reverse(sortBy(cards, 'rank'));
+            console.warn('sorted', sortedCards);
+            let i: number;
+            let isRoyal: boolean = true;
+            let isFlush: boolean = true;
+            let isStraight: boolean = true;
+            const initialSuite: ESuiteConstant = sortedCards[0].suite; // set initial suite
+            let previousValue: ERankConstant = sortedCards[0].rank;
+            const royalRanks: ERankConstant[] = [ERankConstant.ACE, ERankConstant.KING, ERankConstant.QUEEN, ERankConstant.JACK, ERankConstant.TEN];
+            // check if flush
+            for (i = 1; i < sortedCards.length; i++) {
+                // start at 1 since initial suite is from 0 element
+                if (sortedCards[i].suite !== initialSuite) {
+                    isFlush = false;
+                    break;
+                }
+            }
+            // check if straight
+            for (i = 1; i < sortedCards.length; i++) {
+                // start at 1 since initial rank is from 0 element
+                if (sortedCards[i].rank !== (previousValue - 1)) {
+                    isStraight = false;
+                    break;
+                } else {
+                    previousValue = sortedCards[i].rank;
+                }
+            }
+            if (isStraight && isFlush) {
+                // check if royal
+                for (i = 0; i < sortedCards.length; i++) {
+                    if (royalRanks[i] !== sortedCards[i].rank) {
+                        isRoyal = false;
+                        break;
+                    }
+                }
+                if (isRoyal) {
+                    // royal flush
+                    return ['Royal Flush (', UtilsService.capitalize(ESuiteConstant[sortedCards[0].suite]), ')'].join('');
+                } else {
+                    // straight flush
+                    return ['Straight Flush (', UtilsService.capitalize(ESuiteConstant[sortedCards[0].suite]), ')'].join('');
+                }
+            } else if (isFlush) {
+                // flush
+                return ['Flush (', UtilsService.capitalize(ESuiteConstant[sortedCards[0].suite]), ')'].join('');
+            } else if (isStraight) {
+                // straight
+                return 'Straight';
+            } else {
+                // four of a kind
+                // three of a king
+                // full house
+                // two pair
+                // pair
+                // high card
+                return ['High Card (', UtilsService.capitalize(ERankConstant[sortedCards[0].rank]), ')'].join('');
+            }
+        } else {
+            return 'Invalid hand supplied';
+        }
     }
 }
