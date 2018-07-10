@@ -58,7 +58,6 @@ export class HandService {
                             parsedRank = ERankConstant.ACE;
                             break;
                         default:
-                            console.warn('could not identify ' + rawRank);
                             return undefined;
                     }
                     // parse suite
@@ -77,7 +76,6 @@ export class HandService {
                             parsedSuite = ESuiteConstant.SPADES;
                             break;
                         default:
-                            console.warn('could not identify ' + rawSuite);
                             return undefined;
                     }
                     return {
