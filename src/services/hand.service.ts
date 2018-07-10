@@ -1,7 +1,8 @@
 import { ICardInterface } from '../interfaces/types/card.interface';
-import { map, filter } from 'lodash';
+import { map, filter, sortBy, reverse } from 'lodash';
 import { ESuiteConstant } from '../constants/suite.constant';
 import { ERankConstant } from '../constants/rank.constant';
+import { UtilsService } from './utils.service';
 
 export class HandService {
 
@@ -89,5 +90,11 @@ export class HandService {
                 }
             })
         );
+    }
+
+    public static calculateHandRank(cards: ICardInterface[]): string {
+        const sortedCards: ICardInterface[] = reverse(sortBy(cards, 'rank'));
+        console.warn('sorted', sortedCards);
+        return ['High Card (', UtilsService.capitalize(ERankConstant[sortedCards[0].rank]), ')'].join('');
     }
 }

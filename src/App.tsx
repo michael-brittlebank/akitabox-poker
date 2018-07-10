@@ -7,6 +7,7 @@ import { ICardInterface } from './interfaces/types/card.interface';
 interface IState {
     currentHand: string;
     inputError: boolean;
+    handRank: string;
 }
 
 class App extends React.Component<any, IState> {
@@ -14,7 +15,8 @@ class App extends React.Component<any, IState> {
         super(props);
         this.state = {
             currentHand: 'Ah As 10c 7d 6s', // todo, remove after testing
-            inputError: false
+            inputError: false,
+            handRank: ''
         };
         this._onHandChange = this._onHandChange.bind(this);
         this._submitHandRank = this._submitHandRank.bind(this);
@@ -62,6 +64,14 @@ class App extends React.Component<any, IState> {
                                     :
                                     null
                             }
+                            {
+                                this.state.handRank.length > 0 ?
+                                    <div className="alert alert-success" role="alert">
+                                        {this.state.handRank}
+                                    </div>
+                                    :
+                                    null
+                            }
                         </div>
                     </div>
                 </main>
@@ -75,7 +85,8 @@ class App extends React.Component<any, IState> {
         // reset ui after user input
         this.setState({
             currentHand: handValue,
-            inputError: false
+            inputError: false,
+            handRank: ''
         });
     }
 
@@ -85,7 +96,9 @@ class App extends React.Component<any, IState> {
         if (this.state.currentHand.length > 0) {
             const cards: ICardInterface[] = HandService.parseHandIntoCards(this.state.currentHand);
             if (cards.length === 5) {
-                console.log('cards', cards);
+                this.setState({
+                    handRank: HandService.calculateHandRank(cards)
+                });
             } else {
                 this.setState({
                     inputError: true
