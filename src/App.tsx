@@ -1,16 +1,20 @@
 import * as React from 'react';
 import './App.css';
 import logo from './logo.svg';
+import { HandService } from './services/hand.service';
+import { ICardInterface } from './interfaces/types/card.interface';
 
 interface IState {
     currentHand: string;
+    inputError: boolean;
 }
 
 class App extends React.Component<any, IState> {
     constructor(props: any) {
         super(props);
         this.state = {
-            currentHand: ''
+            currentHand: 'Ah As 10c 7d 6s', // todo, remove after testing
+            inputError: false
         };
         this._onHandChange = this._onHandChange.bind(this);
         this._submitHandRank = this._submitHandRank.bind(this);
@@ -37,6 +41,9 @@ class App extends React.Component<any, IState> {
                                         value={this.state.currentHand}
                                         onChange={this._onHandChange}/>
                                 </div>
+                                <div className="alert alert-info" role="alert">
+                                    Please follow the format of each card's rank followed by suite and separated by spaces
+                                </div>
                                 {
                                     // display submit button if search string is not empty
                                     this.state.currentHand.length > 0 ?
@@ -47,6 +54,14 @@ class App extends React.Component<any, IState> {
                                         null
                                 }
                             </form>
+                            {
+                                this.state.inputError ?
+                                    <div className="alert alert-danger" role="alert">
+                                        One or more cards are invalid, please check your input
+                                    </div>
+                                    :
+                                    null
+                            }
                         </div>
                     </div>
                 </main>
@@ -59,7 +74,8 @@ class App extends React.Component<any, IState> {
         const handValue: string = e.target.value;
         // reset ui after user input
         this.setState({
-            currentHand: handValue
+            currentHand: handValue,
+            inputError: false
         });
     }
 
@@ -67,7 +83,14 @@ class App extends React.Component<any, IState> {
         e.preventDefault();
         // only call api if search string is not empty
         if (this.state.currentHand.length > 0) {
-            console.log(this.state.currentHand);
+            const cards: ICardInterface[] = HandService.parseHandIntoCards(this.state.currentHand);
+            if (cards.length === 5) {
+                console.log('cards', cards);
+            } else {
+                this.setState({
+                    inputError: true
+                });
+            }
         }
     }
 
