@@ -14,7 +14,7 @@ class App extends React.Component<any, IState> {
     constructor(props: any) {
         super(props);
         this.state = {
-            currentHand: 'Ah As 10c 7d 6s', // todo, remove after testing
+            currentHand: 'Kh Kc 3s 3h 2d', // todo, remove after testing
             inputError: false,
             handRank: ''
         };

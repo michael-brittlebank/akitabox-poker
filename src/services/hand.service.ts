@@ -1,5 +1,5 @@
 import { ICardInterface } from '../interfaces/types/card.interface';
-import { map, filter, sortBy, reverse } from 'lodash';
+import { map, filter, sortBy, reverse, groupBy, values } from 'lodash';
 import { ESuiteConstant } from '../constants/suite.constant';
 import { ERankConstant } from '../constants/rank.constant';
 import { UtilsService } from './utils.service';
@@ -93,9 +93,10 @@ export class HandService {
     }
 
     public static calculateHandRank(cards: ICardInterface[]): string {
+        // based off of https://www.cardplayer.com/rules-of-poker/hand-rankings
         if (cards.length === 5) {
+            // sort cards by rank descending
             const sortedCards: ICardInterface[] = reverse(sortBy(cards, 'rank'));
-            console.warn('sorted', sortedCards);
             let i: number;
             let isRoyal: boolean = true;
             let isFlush: boolean = true;
@@ -143,13 +144,91 @@ export class HandService {
                 // straight
                 return 'Straight';
             } else {
-                // four of a kind
-                // three of a king
-                // full house
-                // two pair
-                // pair
-                // high card
-                return ['High Card (', UtilsService.capitalize(ERankConstant[sortedCards[0].rank]), ')'].join('');
+                // group cards into subarrays by rank value
+                const groupedCardsObject: any = groupBy(sortedCards, 'rank');
+                const groupedCards: any = values(groupedCardsObject);
+                if (groupedCards.length === 2) {
+                    // determine max array length
+                    let maximumArrayLength: number = 0;
+                    for (i = 0; i < groupedCards.length; i++) {
+                        if (maximumArrayLength < groupedCards[i].length) {
+                            maximumArrayLength = groupedCards[i].length;
+                            if (groupedCards[i].length === 4) {
+                                break;
+                            }
+                        }
+                    }
+                    if (maximumArrayLength === 4) {
+                        // four of a kind
+                        let rank: string;
+                        for (i = 0; i < groupedCards.length; i++) {
+                            if (groupedCards[i].length === maximumArrayLength) {
+                                rank = UtilsService.capitalize(ERankConstant[groupedCards[i][0].rank])+'s';
+                                break;
+                            }
+                        }
+                        return ['Four of a Kind (', rank, ')'].join('');
+                    } else {
+                        // full house
+                        const ranks: string[] = [];
+                        for (i = 0; i < groupedCards.length; i++) {
+                            if (groupedCards[i].length === maximumArrayLength || groupedCards[i].length === maximumArrayLength - 1) {
+                                ranks.push(UtilsService.capitalize(ERankConstant[groupedCards[i][0].rank])+'s');
+                                if (ranks.length > 1) {
+                                    break;
+                                }
+                            }
+                        }
+                        return ['Full House (', ranks.join(' & '), ')'].join('');
+                    }
+                } else if (groupedCards.length === 3) {
+                    // determine max array length
+                    let maximumArrayLength: number = 0;
+                    for (i = 0; i < groupedCards.length; i++) {
+                        if (maximumArrayLength < groupedCards[i].length) {
+                            maximumArrayLength = groupedCards[i].length;
+                            if (groupedCards[i].length === 3) {
+                                break;
+                            }
+                        }
+                    }
+                    if (maximumArrayLength === 3) {
+                        // three of a kind
+                        let rank: string;
+                        for (i = 0; i < groupedCards.length; i++) {
+                            if (groupedCards[i].length === maximumArrayLength) {
+                                rank = UtilsService.capitalize(ERankConstant[groupedCards[i][0].rank])+'s';
+                                break;
+                            }
+                        }
+                        return ['Three of a Kind (', rank, ')'].join('');
+                    } else {
+                        // two pair
+                        const ranks: string[] = [];
+                        for (i = 0; i < groupedCards.length; i++) {
+                            if (groupedCards[i].length === maximumArrayLength) {
+                                ranks.push(UtilsService.capitalize(ERankConstant[groupedCards[i][0].rank])+'s');
+                                if (ranks.length > 1) {
+                                    break;
+                                }
+                            }
+                        }
+                        return ['Two Pair (', ranks.join(' & '), ')'].join('');
+                    }
+                } else if (groupedCards.length === 4) {
+                    // pair
+                    let rank: string;
+                    for (i = 0; i < groupedCards.length; i++) {
+                        if (groupedCards[i].length > 1) {
+                            rank = UtilsService.capitalize(ERankConstant[groupedCards[i][0].rank])+'s';
+                            break;
+                        }
+                    }
+                    return ['Pair (', rank, ')'].join('');
+                } else {
+                    // high card
+                    return ['High Card (', UtilsService.capitalize(ERankConstant[sortedCards[0].rank]), ')'].join('');
+                }
             }
         } else {
             return 'Invalid hand supplied';
