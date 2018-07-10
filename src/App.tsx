@@ -59,7 +59,7 @@ class App extends React.Component<any, IState> {
                             {
                                 this.state.inputError ?
                                     <div className="alert alert-danger" role="alert">
-                                        One or more cards are invalid, please check your input
+                                        One or more cards are invalid or duplicated, please check your input
                                     </div>
                                     :
                                     null
@@ -100,6 +100,7 @@ class App extends React.Component<any, IState> {
                     handRank: HandService.calculateHandRank(cards)
                 });
             } else {
+                // todo, get proper validation error from parsing service
                 this.setState({
                     inputError: true
                 });
